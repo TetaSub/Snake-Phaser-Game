@@ -6,6 +6,10 @@ const DOWN = 1;
 const LEFT = 2;
 const RIGHT = 3;
 
+// Storage key
+const STORAGE_KEY = 'maxScore';
+
+
 class Food extends Phaser.GameObjects.Image {
   constructor(scene, x, y) {
     super(scene);
@@ -14,18 +18,24 @@ class Food extends Phaser.GameObjects.Image {
     this.setPosition(x * 16, y * 16);
     this.setOrigin(0);
 
-    this.total = 0;
+    this.total = 0;   
 
-    scene.children.add(this);
+    this.scene.children.add(this);
   }
 
   eat() {
-    this.total++;
+    this.total++;     
+    this.scene.score ++;
+    this.scene.scoreText.setText("apples: " + this.scene.score);     
+    
+    const shine = this.postFX.addShine();  
+    return shine;
   }
 }
 
-class Snake {
-  constructor(scene, x, y) {
+class Snake extends Phaser.GameObjects.Image {
+    constructor(scene, x, y) {
+        super(scene);
     this.headPosition = new Phaser.Geom.Point(x, y);
     this.body = scene.add.group();
     this.alive = true;
@@ -58,7 +68,7 @@ class Snake {
   update(time) {
     if (time >= this.moveTime) {
       return this.move(time);
-    }
+    }    
   }
 
   faceLeft() {
@@ -86,13 +96,7 @@ class Snake {
   }
 
   move(time) {
-    /**
-     * Based on the heading property (which is the direction the pgroup pressed)
-     * we update the headPosition value accordingly.
-     *
-     * The Math.wrap call allow the snake to wrap around the screen, so when
-     * it goes off any of the sides it re-appears on the other.
-     */
+    // Update headPosition  
     switch (this.heading) {
       case LEFT:
         this.headPosition.x = Phaser.Math.Wrap(this.headPosition.x - 1, 0, 40);
@@ -132,11 +136,8 @@ class Snake {
     );
 
     if (hitBody) {
-      console.log("dead");
-
-      this.alive = false;
-
-      return false;
+        this.scene.handleGameOver();
+        // return false;
     } else {
       //  Update the timer ready for the next movement
       this.moveTime = time + this.speed;
@@ -152,21 +153,27 @@ class Snake {
   }
 
   collideWithFood(food) {
-    if (this.head.x === food.x && this.head.y === food.y) {
-      this.grow();
+  if (this.head.x === food.x && this.head.y === food.y) {
+    this.grow();
+    food.eat();
 
-      food.eat();
-
-      //  For every 5 items of food eaten we'll increase the snake speed a little
-      if (this.speed > 20 && food.total % 5 === 0) {
-        this.speed -= 5;
+    // For every 5 items of food eaten, the snake speed is increased
+    if (this.speed > 20 && food.total % 5 === 0) {
+      if (food.total >= 20) {
+          this.speed -= 20;
+        } else {
+          this.speed -= 50;
+        }
+      this.scene.displayedSpeed ++;
+      this.scene.displayedSpeedText.setText(
+        "speed: " + this.scene.displayedSpeed + " crawls/sec"
+      );
       }
-
-      return true;
-    } else {
-      return false;
-    }
+    this.scene.setMaxScore();
+    return true;
   }
+  return false;
+}    
 
   updateGrid(grid) {
     //  Remove all body pieces from valid positions list
@@ -182,140 +189,228 @@ class Snake {
 }
 
 class Scene extends Phaser.Scene {
-  score = 0;
-  scoreText;
-  gameOver = false;
-  snake;
-  food;
-  cursors;
+    score = 0;
+    scoreText;
+    maxScoreText;
+    gameOver = false;
+    snake;
+    food;
+    cursors;
 
-  preload() {
-    this.load.image("grass", "assets/grass.png");
-    this.load.spritesheet("head", "assets/snake-head.png", {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-    this.load.spritesheet("body", "assets/snake-body.png", {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-    this.load.spritesheet("food", "assets/food.png", {
-      frameWidth: 16,
-      frameHeight: 16,
-    });
-  }
-
-  create() {
-    this.add.image(400, 300, "grass");
-
-    this.food = new Food(this, 3, 4);
-
-    this.snake = new Snake(this, 8, 8);
-
-    //  Create our keyboard controls
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    // Score
-    let scoreStyle = { font: "20px Arial", fill: "#fff" };
-    this.score = 0;
-    this.scoreText = this.add.text(20, 20, "apples: " + this.score, scoreStyle);
-
-    this.maxScore = 0;
-    this.maxScoreText = this.add.text(
-      400,
-      20,
-      "max apples: " + this.maxScore,
-      scoreStyle
-    );
-
-    // Current speed
-    let currentSpeedStyle = { font: "20px Arial", fill: "#fff" };
-    this.currentSpeed = 2;
-    this.currentSpeedText = this.add.text(
-      20,
-      40,
-      "speed: " + this.currentSpeed + " crawls per second",
-      currentSpeedStyle
-    );
-  }
-
-  update(time, delta) {
-    if (!this.snake.alive) {
-      return;
+    preload() {
+        this.load.image("grass", "assets/grass.png");
+        this.load.spritesheet("head", "assets/snake-head.png", {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
+        this.load.spritesheet("body", "assets/snake-body.png", {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
+        this.load.spritesheet("food", "assets/food.png", {
+            frameWidth: 16,
+            frameHeight: 16,
+        });
     }
 
-    // /**
-    // * Check which key is pressed, and then change the direction the snake
-    // * is heading based on that. The checks ensure you don't double-back
-    // * on yourself, for example if you're moving to the right and you press
-    // * the LEFT cursor, it ignores it, because the only valid directions you
-    // * can move in at that time is up and down.
-    // */
-    if (this.cursors.left.isDown) {
-      this.snake.faceLeft();
-    } else if (this.cursors.right.isDown) {
-      this.snake.faceRight();
-    } else if (this.cursors.up.isDown) {
-      this.snake.faceUp();
-    } else if (this.cursors.down.isDown) {
-      this.snake.faceDown();
+    create() {
+        this.add.image(400, 300, "grass");
+        this.food = new Food(this, 3, 4);
+        this.snake = new Snake(this, 8, 8);
+
+        //  Keyboard controls
+        this.cursors = this.input.keyboard.createCursorKeys();
+
+        // Score
+        let scoreStyle = { font: "20px Arial", fill: "#fff" };
+        this.score = 0;
+        this.scoreText = this.add.text(20, 20, "apples: " + this.score, scoreStyle);
+
+        this.maxScore = 0;
+        this.getMaxScore();
+        this.maxScoreText = this.add.text(
+            400,
+            20,
+            "max apples: " + this.maxScore,
+            scoreStyle
+        );
+
+        // Current speed
+        let displayedSpeedStyle = { font: "20px Arial", fill: "#fff" };
+        this.displayedSpeed = 1;
+        this.displayedSpeedText = this.add.text(
+            20,
+            40,
+            "speed: " + this.displayedSpeed + " crawls/sec",
+            displayedSpeedStyle
+      );
+
+    //this.startGame();
+      
+     
     }
 
-    if (this.snake.update(time)) {
-      //  If the snake updated, we need to check for collision against food
-      if (this.snake.collideWithFood(this.food)) {
-        this.repositionFood();
-      }
-    }
-  }
-
-  repositionFood() {
-    //  First create an array that assumes all positions
-    //  are valid for the new piece of food
-
-    //  A Grid we'll use to reposition the food each time it's eaten
-    let testGrid = [];
-
-    for (let y = 0; y < 30; y++) {
-      testGrid[y] = [];
-
-      for (let x = 0; x < 40; x++) {
-        testGrid[y][x] = true;
-      }
-    }
-
-    this.snake.updateGrid(testGrid);
-
-    //  Purge out false positions
-    let validLocations = [];
-
-    for (let y = 0; y < 30; y++) {
-      for (let x = 0; x < 40; x++) {
-        if (testGrid[y][x] === true) {
-          //  Is this position valid for food? If so, add it here ...
-          validLocations.push({ x: x, y: y });
+  update(time, delta) {   
+       
+      if (this.gameOver) {        
+            return;
         }
+
+        // Prevent moving in oposite direction when pressing key
+        if (this.cursors.left.isDown) {
+            this.snake.faceLeft();
+        } else if (this.cursors.right.isDown) {
+            this.snake.faceRight();
+        } else if (this.cursors.up.isDown) {
+            this.snake.faceUp();
+        } else if (this.cursors.down.isDown) {
+            this.snake.faceDown();
+        }
+
+        if (this.snake.update(time)) {
+            //  If the snake updated, we need to check for collision against food
+            if (this.snake.collideWithFood(this.food)) {
+                this.repositionFood();
+            }
       }
-    }
 
-    if (validLocations.length > 0) {
-      //  Use the RNG to pick a random food position
-      let pos = Phaser.Math.RND.pick(validLocations);
-
-      //  And place it
-      this.food.setPosition(pos.x * 16, pos.y * 16);
-
-      return true;
-    } else {
-      return false;
-    }
+  if (this.snake.alive === false) {
+    this.handleGameOver();
   }
+    }
+
+    repositionFood() {
+        //  First create an array that assumes all positions are valid for the new piece of food
+        //  A Grid we'll use to reposition the food each time it's eaten
+        let testGrid = [];
+
+        for (let y = 0; y < 30; y++) {
+            testGrid[y] = [];
+
+            for (let x = 0; x < 40; x++) {
+                testGrid[y][x] = true;
+            }
+        }
+
+        this.snake.updateGrid(testGrid);
+
+        //  Purge out false positions
+        let validLocations = [];
+
+        for (let y = 0; y < 30; y++) {
+            for (let x = 0; x < 40; x++) {
+                if (testGrid[y][x] === true) {
+                    //  Is this position valid for food? If so, add it here ...
+                    validLocations.push({ x: x, y: y });
+                }
+            }
+        }
+
+        if (validLocations.length > 0) {
+            //  Use the RNG to pick a random food position
+            let pos = Phaser.Math.RND.pick(validLocations);
+
+            //  And place it
+            this.food.setPosition(pos.x * 16, pos.y * 16);
+
+            return true;
+        } else {
+            return false;
+        }
+      
+    }
+
+    setMaxScore() {
+        if (this.score > this.maxScore) {
+            this.maxScore = this.score;
+            this.maxScoreText.setText('max apples: ' + this.maxScore);
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.maxScore));
+    }
+
+    getMaxScore() {
+        const storedMaxScore = localStorage.getItem(STORAGE_KEY);
+        if (storedMaxScore) {
+            JSON.parse
+            this.maxScore = JSON.parse(storedMaxScore);            
+        }
+    }
+
+    startGame() {
+    
+        this.input.keyboard.enabled = false; 
+        this.overlay = this.add.image(400, 300, "grass"); 
+
+        // Start game text
+        this.gameText = this.add.text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 - 50,
+          'Snake Game',
+          { font: "48px Arial", fill: "#fff" }
+        );
+        this.gameText.setOrigin(0.5);
+        this.gameText.setDepth(2);
+
+        // Start game button
+        this.startButton = this.add.text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 + 50,
+          'Start',
+          { font: "32px Arial", fill: "#fff" }
+        );
+        this.startButton.setOrigin(0.5);
+        this.startButton.setDepth(2);
+        this.startButton.setInteractive();
+
+
+        this.startButton.on('pointerup', () => {
+            this.scene.start("default");        
+            // this.overlay.destroy();
+            // this.gameText.destroy();
+            // this.startButton.destroy();
+                  
+      });
+
+        
+      }
+
+    handleGameOver() {
+        this.gameOver = true;
+        this.snake.alive = false;
+        this.input.keyboard.enabled = false; 
+
+        this.overlay = this.add.image(400, 300, "grass");  
+        this.gameOverText = this.add.text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 - 50,
+          'Game Over',
+          { font: "48px Arial", fill: "#fff" }
+        );
+        this.gameOverText.setOrigin(0.5);
+        this.gameOverText.setDepth(2);
+
+        // start Again button
+        this.startAgainButton = this.add.text(
+        this.cameras.main.width / 2,
+        this.cameras.main.height / 2 + 50,
+          'Start Again',
+          { font: "32px Arial", fill: "#fff" }
+        );
+        this.startAgainButton.setOrigin(0.5);
+        this.startAgainButton.setDepth(2);
+        this.startAgainButton.setInteractive();
+      
+        this.startAgainButton.on('pointerup', () => {   
+          this.scene.restart();        
+        });      
+    }
+
 }
 
 const config = {
-  type: Phaser.WEBGL,
-  width: 640,
-  height: 480,
+  type: Phaser.AUTO,
+  width: 800,
+  height: 600,
   backgroundColor: "#bfcc00",
   parent: "phaser-example",
   scene: Scene,
