@@ -1,1 +1,9 @@
-/*# sourceMappingURL=styles.css.map */
+#game-container {
+  background-color: rgba(39, 55, 74, 0.7);
+  width: 100%;
+  height: 100%;
+  padding: 5% 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}/*# sourceMappingURL=styles.css.map */

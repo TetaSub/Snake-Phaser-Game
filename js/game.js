@@ -136,8 +136,8 @@ class Snake extends Phaser.GameObjects.Image {
     );
 
     if (hitBody) {
-        this.scene.handleGameOver();
-        // return false;
+      this.scene.handleGameOver();
+        //return false;
     } else {
       //  Update the timer ready for the next movement
       this.moveTime = time + this.speed;
@@ -169,7 +169,7 @@ class Snake extends Phaser.GameObjects.Image {
         "speed: " + this.scene.displayedSpeed + " crawls/sec"
       );
       }
-    this.scene.setMaxScore();
+    //this.scene.setMaxScore();
     return true;
   }
   return false;
@@ -188,7 +188,10 @@ class Snake extends Phaser.GameObjects.Image {
   }
 }
 
-class Scene extends Phaser.Scene {
+class PlayScene extends Phaser.Scene {
+  constructor() {
+        super("playGame");
+    }
     score = 0;
     scoreText;
     maxScoreText;
@@ -196,30 +199,32 @@ class Scene extends Phaser.Scene {
     snake;
     food;
     cursors;
+    record;
 
     preload() {
-        this.load.image("grass", "assets/grass.png");
+        this.load.image("grass", "./assets/grass.png");
         this.load.spritesheet("head", "assets/snake-head.png", {
             frameWidth: 16,
             frameHeight: 16,
         });
-        this.load.spritesheet("body", "assets/snake-body.png", {
+        this.load.spritesheet("body", "./assets/snake-body.png", {
             frameWidth: 16,
             frameHeight: 16,
         });
-        this.load.spritesheet("food", "assets/food.png", {
+        this.load.spritesheet("food", "./assets/food.png", {
             frameWidth: 16,
             frameHeight: 16,
         });
     }
 
     create() {
-        this.add.image(400, 300, "grass");
+      this.add.image(400, 300, "grass");      
         this.food = new Food(this, 3, 4);
         this.snake = new Snake(this, 8, 8);
 
         //  Keyboard controls
-        this.cursors = this.input.keyboard.createCursorKeys();
+      this.cursors = this.input.keyboard.createCursorKeys();
+      this.gameOver = false;
 
         // Score
         let scoreStyle = { font: "20px Arial", fill: "#fff" };
@@ -243,10 +248,7 @@ class Scene extends Phaser.Scene {
             40,
             "speed: " + this.displayedSpeed + " crawls/sec",
             displayedSpeedStyle
-      );
-
-    //this.startGame();
-      
+      );   
      
     }
 
@@ -274,9 +276,9 @@ class Scene extends Phaser.Scene {
             }
       }
 
-  if (this.snake.alive === false) {
-    this.handleGameOver();
-  }
+    if (this.snake.alive === false) {
+      this.handleGameOver();
+      }
     }
 
     repositionFood() {
@@ -307,113 +309,37 @@ class Scene extends Phaser.Scene {
         }
 
         if (validLocations.length > 0) {
-            //  Use the RNG to pick a random food position
+            //  pick and set a random food position
             let pos = Phaser.Math.RND.pick(validLocations);
-
-            //  And place it
             this.food.setPosition(pos.x * 16, pos.y * 16);
-
             return true;
         } else {
             return false;
         }
       
-    }
-
+  }
+  
     setMaxScore() {
-        if (this.score > this.maxScore) {
-            this.maxScore = this.score;
-            this.maxScoreText.setText('max apples: ' + this.maxScore);
-        }
+      if (this.score > this.maxScore) {
+        this.maxScore = this.score;        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.maxScore));
-    }
+      }
+  }    
 
     getMaxScore() {
         const storedMaxScore = localStorage.getItem(STORAGE_KEY);
-        if (storedMaxScore) {
-            JSON.parse
+        if (storedMaxScore) {            
             this.maxScore = JSON.parse(storedMaxScore);            
         }
     }
 
-    startGame() {
-    
-        this.input.keyboard.enabled = false; 
-        this.overlay = this.add.image(400, 300, "grass"); 
-
-        // Start game text
-        this.gameText = this.add.text(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2 - 50,
-          'Snake Game',
-          { font: "48px Arial", fill: "#fff" }
-        );
-        this.gameText.setOrigin(0.5);
-        this.gameText.setDepth(2);
-
-        // Start game button
-        this.startButton = this.add.text(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2 + 50,
-          'Start',
-          { font: "32px Arial", fill: "#fff" }
-        );
-        this.startButton.setOrigin(0.5);
-        this.startButton.setDepth(2);
-        this.startButton.setInteractive();
-
-
-        this.startButton.on('pointerup', () => {
-            this.scene.start("default");        
-            // this.overlay.destroy();
-            // this.gameText.destroy();
-            // this.startButton.destroy();
-                  
-      });
-
-        
-      }
-
     handleGameOver() {
         this.gameOver = true;
-        this.snake.alive = false;
-        this.input.keyboard.enabled = false; 
-
-        this.overlay = this.add.image(400, 300, "grass");  
-        this.gameOverText = this.add.text(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2 - 50,
-          'Game Over',
-          { font: "48px Arial", fill: "#fff" }
-        );
-        this.gameOverText.setOrigin(0.5);
-        this.gameOverText.setDepth(2);
-
-        // start Again button
-        this.startAgainButton = this.add.text(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2 + 50,
-          'Start Again',
-          { font: "32px Arial", fill: "#fff" }
-        );
-        this.startAgainButton.setOrigin(0.5);
-        this.startAgainButton.setDepth(2);
-        this.startAgainButton.setInteractive();
-      
-        this.startAgainButton.on('pointerup', () => {   
-          this.scene.restart();        
-        });      
+        this.snake.alive = false;        
+        this.setMaxScore();
+        this.scene.start("gameOver", { score: this.score, maxScore: this.maxScore }); 
     }
 
 }
+console.log(this.record);
 
-const config = {
-  type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  backgroundColor: "#bfcc00",
-  parent: "phaser-example",
-  scene: Scene,
-};
-
-const game = new Phaser.Game(config);
