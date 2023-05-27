@@ -15,30 +15,32 @@ class EndScene extends Phaser.Scene {
         // game over Text
         this.gameOverText = this.add.text(
                 this.cameras.main.width / 2,
-                this.cameras.main.height / 2 - 50,
-                'Game Over',
-                { font: "48px Arial", fill: "#27374A" }
+                this.cameras.main.height / 2 - 40,
+                'GAME OVER',
+                { font: "100px VT323", fill: "#27374A" }
             );
         this.gameOverText.setOrigin(0.5);
         this.gameOverText.setDepth(2);        
 
+        
+
         // score text
-        const { score, maxScore } = this.scene.settings.data;
+        const { score, record } = this.scene.settings.data;
         this.scoreText = this.add.text(
                 this.cameras.main.width / 2,
                 this.cameras.main.height / 2 + 20,
                 'You catched ' + score + ' apples',
-                { font: "36px Arial", fill: "#fff" }
+                { font: "48px VT323", fill: "#27374A" }
             );
         this.scoreText.setOrigin(0.5);
         this.scoreText.setDepth(2);
 
-        if (score >= maxScore) {
+        if (record) {
             this.winText = this.add.text(
                 this.cameras.main.width / 2,
                 this.cameras.main.height / 2 + 70,
                 'Congrts! You set the record!',
-                { font: "36px Arial", fill: "#fff" }
+                { font: "48px VT323", fill: "#27374A" }
             );
             this.winText.setOrigin(0.5);
             this.winText.setDepth(2);            
@@ -51,7 +53,7 @@ class EndScene extends Phaser.Scene {
                 this.cameras.main.width / 2,
                 this.cameras.main.height / 2 + 150,
                 'START AGAIN',
-                { font: "48px Arial", fill: "#fff" }
+                { font: "80px VT323", fill: "#27374A" }
             );
             this.startAgainButton.setOrigin(0.5);
             this.startAgainButton.setDepth(2);
@@ -78,7 +80,14 @@ class EndScene extends Phaser.Scene {
             this.startAgainButton.on('pointerdown', () => {
                 this.startAgainButton.setScale(0.9);
             });
-        }
+            
+            //  keyboard input
+            const enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
+            enterKey.on('down', () => {
+                this.scene.start("playGame");
+            });
+            }  
+    
 
     }
 

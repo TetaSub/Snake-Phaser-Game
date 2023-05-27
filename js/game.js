@@ -202,7 +202,7 @@ class PlayScene extends Phaser.Scene {
     record;
 
     preload() {
-        this.load.image("grass", "./assets/grass.png");
+        this.load.image("grass", "./assets/new-grass.png");
         this.load.spritesheet("head", "assets/snake-head.png", {
             frameWidth: 16,
             frameHeight: 16,
@@ -215,39 +215,43 @@ class PlayScene extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16,
         });
+      this.load.image("close-icon", "./assets/close-icon.png")
     }
 
     create() {
-      this.add.image(400, 300, "grass");      
-        this.food = new Food(this, 3, 4);
-        this.snake = new Snake(this, 8, 8);
+      this.add.image(400, 300, "grass");
+      const closeButton = this.add.image(620, 20, "close-icon").setInteractive();
+          closeButton.on("pointerup", () => {
+            this.handleGameOver();
+      });
+      this.food = new Food(this, 5, 6);
+      this.snake = new Snake(this, 10, 10);
 
         //  Keyboard controls
       this.cursors = this.input.keyboard.createCursorKeys();
       this.gameOver = false;
 
         // Score
-        let scoreStyle = { font: "20px Arial", fill: "#fff" };
+        let textStyle = { font: "32px VT323", fill: "#27374A" };
         this.score = 0;
-        this.scoreText = this.add.text(20, 20, "apples: " + this.score, scoreStyle);
+        this.scoreText = this.add.text(20, 10, "apples: " + this.score, textStyle);
 
         this.maxScore = 0;
         this.getMaxScore();
         this.maxScoreText = this.add.text(
             400,
-            20,
+            10,
             "max apples: " + this.maxScore,
-            scoreStyle
+            textStyle
         );
 
-        // Current speed
-        let displayedSpeedStyle = { font: "20px Arial", fill: "#fff" };
+        // Current speed        
         this.displayedSpeed = 1;
         this.displayedSpeedText = this.add.text(
             20,
             40,
             "speed: " + this.displayedSpeed + " crawls/sec",
-            displayedSpeedStyle
+            textStyle
       );   
      
     }
@@ -299,7 +303,7 @@ class PlayScene extends Phaser.Scene {
         //  Purge out false positions
         let validLocations = [];
 
-        for (let y = 0; y < 30; y++) {
+        for (let y = 4; y < 30; y++) {
             for (let x = 0; x < 40; x++) {
                 if (testGrid[y][x] === true) {
                     //  Is this position valid for food? If so, add it here ...
@@ -318,9 +322,16 @@ class PlayScene extends Phaser.Scene {
         }
       
   }
-  
-    setMaxScore() {
+
+  setRecord() {    
       if (this.score > this.maxScore) {
+        this.record = this.score;
+        return this.record;   
+    }    
+  }
+  
+  setMaxScore() {
+      if (this.score > this.maxScore) {        
         this.maxScore = this.score;        
         localStorage.setItem(STORAGE_KEY, JSON.stringify(this.maxScore));
       }
@@ -335,11 +346,12 @@ class PlayScene extends Phaser.Scene {
 
     handleGameOver() {
         this.gameOver = true;
-        this.snake.alive = false;        
+        this.snake.alive = false; 
+        this.setRecord();
         this.setMaxScore();
-        this.scene.start("gameOver", { score: this.score, maxScore: this.maxScore }); 
+        this.scene.start("gameOver", { score: this.score, record: this.record }); 
     }
 
 }
-console.log(this.record);
+
 
