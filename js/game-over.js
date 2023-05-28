@@ -6,11 +6,13 @@ class EndScene extends Phaser.Scene {
     preload() {
         this.load.image("grass", "./assets/grass.png");
         this.load.image("snake-dead", "./assets/snake-dead.png");
+        this.load.audio("winSound", "./assets/win-sound.mp3");  
     }
 
     create() {
         this.overlay = this.add.image(320, 240, "grass");
         this.add.image(320, 100, "snake-dead");
+        this.winSound = this.sound.add("winSound", { loop: false });
 
         // game over Text
         this.gameOverText = this.add.text(
@@ -43,7 +45,9 @@ class EndScene extends Phaser.Scene {
                 { font: "48px VT323", fill: "#27374A" }
             );
             this.winText.setOrigin(0.5);
-            this.winText.setDepth(2);            
+            this.winText.setDepth(2);
+            
+            this.winSound.play();
         }       
                
         

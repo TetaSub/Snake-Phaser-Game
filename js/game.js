@@ -21,6 +21,7 @@ class Food extends Phaser.GameObjects.Image {
     this.total = 0;   
 
     this.scene.children.add(this);
+    
   }
 
   eat() {
@@ -200,6 +201,8 @@ class PlayScene extends Phaser.Scene {
     food;
     cursors;
     record;
+    eatSound;
+    gameOverSound;
 
     preload() {
         this.load.image("grass", "./assets/new-grass.png");
@@ -216,6 +219,10 @@ class PlayScene extends Phaser.Scene {
             frameHeight: 16,
         });
       this.load.image("close-icon", "./assets/close-icon.png")
+
+      // Audio
+      this.load.audio("eatSound", "./assets/eat-sound.mp3");
+      this.load.audio("gameOverSound", "./assets/gameover-sound.mp3")
     }
 
     create() {
@@ -226,6 +233,9 @@ class PlayScene extends Phaser.Scene {
       });
       this.food = new Food(this, 5, 6);
       this.snake = new Snake(this, 10, 10);
+
+      this.eatSound = this.sound.add("eatSound", { loop: false });
+      this.gameOverSound = this.sound.add("gameOverSound", { loop: false });      
 
         //  Keyboard controls
       this.cursors = this.input.keyboard.createCursorKeys();
@@ -275,7 +285,8 @@ class PlayScene extends Phaser.Scene {
 
         if (this.snake.update(time)) {
             //  If the snake updated, we need to check for collision against food
-            if (this.snake.collideWithFood(this.food)) {
+          if (this.snake.collideWithFood(this.food)) {
+                this.eatSound.play();
                 this.repositionFood();
             }
       }
@@ -349,9 +360,11 @@ class PlayScene extends Phaser.Scene {
         this.snake.alive = false; 
         this.setRecord();
         this.setMaxScore();
-        this.scene.start("gameOver", { score: this.score, record: this.record }); 
+      this.gameOverSound.play();
+      setTimeout(() => {
+        this.scene.start("gameOver", { score: this.score, record: this.record });
+      }, 3000);         
     }
-
 }
 
 

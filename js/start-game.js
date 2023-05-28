@@ -4,23 +4,16 @@ class StartScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("start-overlay", "./assets/start-overlay.png");
-        //this.load.image("snake-alive", "./assets/snake-alive.png");
+        this.load.image("start-overlay", "./assets/start-overlay.png");        
+        this.load.audio("snakeSound", "./assets/snake-sound-start.mp3");        
     }
 
     create() {      
         
         this.overlay = this.add.image(320, 240, "start-overlay");
-        //this.add.image(320, 100, "snake-alive");
 
-        // this.gameText = this.add.text(
-        //     this.cameras.main.width / 2,
-        //     this.cameras.main.height / 2 - 50,
-        //     'Snake Game',
-        //     { font: "48px Arial", fill: "#BC3B2A" }
-        // );
-        // this.gameText.setOrigin(0.5);
-        // this.gameText.setDepth(2);
+        this.snakeSound = this.sound.add("snakeSound", { loop: true });
+        this.snakeSound.play();       
 
 
         this.instructionText = this.add.text(
@@ -46,7 +39,7 @@ class StartScene extends Phaser.Scene {
 
     // update() {
         this.startButton.on('pointerover', () => {
-            this.startButton.setStyle({ fill: '#BC3B2A' }); 
+        this.startButton.setStyle({ fill: '#BC3B2A' }); 
     });
 
     this.startButton.on('pointerout', () => {
@@ -55,8 +48,11 @@ class StartScene extends Phaser.Scene {
 
 
     this.startButton.on('pointerup', () => {
-        this.startButton.setScale(1);  
-        this.scene.start("playGame");        
+        this.startButton.setScale(1);
+        // setTimeout(() => {
+            this.scene.start("playGame");
+        // }, 1000);
+        this.snakeSound.mute = true;
     });
 
 
@@ -66,9 +62,12 @@ class StartScene extends Phaser.Scene {
         
     //  keyboard input
     const enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
-    enterKey.on('down', () => {
-    this.scene.start("playGame");
-    });
+        enterKey.on('down', () => {
+            // setTimeout(() => {
+                this.scene.start("playGame");
+            // }, 1000);
+            this.snakeSound.mute = true;
+        });        
     }          
         
 }
