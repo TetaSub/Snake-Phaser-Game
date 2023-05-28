@@ -12,7 +12,7 @@ class StartScene extends Phaser.Scene {
         
         this.overlay = this.add.image(320, 240, "start-overlay");
 
-        this.snakeSound = this.sound.add("snakeSound", { loop: true });
+        this.snakeSound = this.sound.add("snakeSound", { loop: false });
         this.snakeSound.play();       
 
 
@@ -43,16 +43,16 @@ class StartScene extends Phaser.Scene {
     });
 
     this.startButton.on('pointerout', () => {
-        this.startButton.setStyle({ fill: '#BC3B2A' }); 
+        this.startButton.setStyle({ fill: '#000' }); 
     });
 
 
     this.startButton.on('pointerup', () => {
         this.startButton.setScale(1);
-        // setTimeout(() => {
+        setTimeout(() => {
             this.scene.start("playGame");
-        // }, 1000);
-        this.snakeSound.mute = true;
+        }, 1000);
+        //this.snakeSound.mute = true;
     });
 
 
@@ -63,10 +63,10 @@ class StartScene extends Phaser.Scene {
     //  keyboard input
     const enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
         enterKey.on('down', () => {
-            // setTimeout(() => {
+            setTimeout(() => {
                 this.scene.start("playGame");
-            // }, 1000);
-            this.snakeSound.mute = true;
+            }, 1000);
+            //this.snakeSound.mute = true;
         });        
     }          
         
