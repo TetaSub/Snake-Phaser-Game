@@ -1,4 +1,6 @@
-class StartScene extends Phaser.Scene {
+"use strict";
+
+export class StartScene extends Phaser.Scene {
     constructor() {
         super("startGame");
     }
@@ -52,7 +54,6 @@ class StartScene extends Phaser.Scene {
         setTimeout(() => {
             this.scene.start("playGame");
         }, 1000);
-        //this.snakeSound.mute = true;
     });
 
 
@@ -66,7 +67,6 @@ class StartScene extends Phaser.Scene {
             setTimeout(() => {
                 this.scene.start("playGame");
             }, 1000);
-            //this.snakeSound.mute = true;
         });        
     }          
         

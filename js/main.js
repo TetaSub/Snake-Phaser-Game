@@ -1,3 +1,9 @@
+"use strict";
+
+import { StartScene } from "./start-game.js";
+import { PlayScene } from "./game.js";
+import { EndScene } from "./game-over.js";
+
 const config = {
   type: Phaser.AUTO,
   width: 640,
@@ -8,3 +14,4 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+
