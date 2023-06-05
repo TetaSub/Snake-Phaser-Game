@@ -1,5 +1,3 @@
-"use strict";
-
 import { StartScene } from "./start-game.js";
 import { PlayScene } from "./game.js";
 import { EndScene } from "./game-over.js";

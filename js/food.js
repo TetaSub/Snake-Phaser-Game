@@ -1,5 +1,3 @@
-"use strict";
-
 export class Food extends Phaser.GameObjects.Image {
   constructor(scene, x, y) {
     super(scene);

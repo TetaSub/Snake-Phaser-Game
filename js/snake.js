@@ -1,5 +1,3 @@
-"use strict";
-
 //  Direction consts
 const UP = 0;
 const DOWN = 1;

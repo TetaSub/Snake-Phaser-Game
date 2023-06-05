@@ -1,5 +1,3 @@
-"use strict";
-
 import { Food } from "./food.js";
 import { Snake } from "./snake.js";
 

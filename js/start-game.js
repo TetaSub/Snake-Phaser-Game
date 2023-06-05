@@ -1,5 +1,3 @@
-"use strict";
-
 export class StartScene extends Phaser.Scene {
     constructor() {
         super("startGame");

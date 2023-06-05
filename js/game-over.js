@@ -1,5 +1,3 @@
-"use strict";
-
 export class EndScene extends Phaser.Scene {
     constructor() {
         super("gameOver");
